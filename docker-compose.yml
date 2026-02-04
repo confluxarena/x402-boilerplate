@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: x402
       POSTGRES_USER: x402
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-x402_secret}
+      POSTGRES_PASSWORD: ${DB_PGSQL_PASS:-x402_secret}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
@@ -29,17 +29,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      facilitator:
-        condition: service_started
     ports:
       - "80:80"
     volumes:
       - .:/var/www/html
+    env_file:
+      - .env
     environment:
       - DB_PGSQL_HOST=db
-      - DB_PGSQL_PORT=5432
-      - DB_PGSQL_NAME=x402
-      - DB_PGSQL_USER=x402
 
   # x402 Facilitator (Node.js)
   facilitator:
