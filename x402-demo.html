@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x402 AI Settlement — Live Demo</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CDN: web3.js (for wallet balance/chain checks) -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+  <!-- CDN: ethers 6.x UMD (for EIP-712 signing, x402Service) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0a0a12;
+      --surface: #12121e;
+      --border: rgba(56, 161, 216, 0.15);
+      --primary: #38A1D8;
+      --primary-glow: rgba(56, 161, 216, 0.25);
+      --success: #00D395;
+      --success-glow: rgba(0, 211, 149, 0.2);
+      --warning: #FFB800;
+      --danger: #EF4444;
+      --fg: #e2e8f0;
+      --fg-muted: #64748b;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Manrope', -apple-system, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ── */
+    .hero {
+      text-align: center;
+      padding: 48px 24px 32px;
+      max-width: 700px;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: var(--primary-glow);
+      color: var(--primary);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 15px;
+      color: var(--fg-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Mode Tabs ── */
+    .mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--fg-muted);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-tab.active {
+      background: var(--primary-glow);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+    .mode-tab:hover:not(.active) {
+      color: var(--fg);
+    }
+
+    /* ── Wallet Bar ── */
+    .wallet-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    .wallet-bar.visible { display: flex; }
+    .wallet-address {
+      font-family: var(--mono);
+      color: var(--primary);
+      font-size: 13px;
+    }
+    .btn-wallet {
+      background: linear-gradient(135deg, var(--primary), #2d7db5);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-wallet:hover { opacity: 0.9; }
+    .btn-disconnect {
+      background: transparent;
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-family: var(--sans);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-disconnect:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    /* ── Main container ── */
+    .container {
+      width: 100%;
+      max-width: 640px;
+      padding: 0 20px 60px;
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .input-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-row input:focus { border-color: var(--primary); }
+    .input-row input::placeholder { color: var(--fg-muted); }
+    .btn-ask {
+      background: linear-gradient(135deg, var(--primary), #2d7db5);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-ask:hover { opacity: 0.9; }
+    .btn-ask:active { transform: scale(0.97); }
+    .btn-ask:disabled { opacity: 0.4; cursor: not-allowed; }
+    .price-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--fg-muted);
+    }
+    .price-tag .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Timeline ── */
+    .timeline {
+      position: relative;
+      padding-left: 36px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .step {
+      position: relative;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+    .step.visible { opacity: 1; transform: translateY(0); }
+    .step-dot {
+      position: absolute;
+      left: -36px;
+      top: 14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      z-index: 1;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .step-dot.pending { background: var(--surface); border: 2px solid var(--border); }
+    .step-dot.active { background: var(--primary-glow); border: 2px solid var(--primary); animation: ring 1.5s infinite; }
+    .step-dot.done { background: var(--success-glow); border: 2px solid var(--success); }
+    .step-dot.error { background: rgba(239,68,68,0.2); border: 2px solid var(--danger); }
+    @keyframes ring { 0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); } 50% { box-shadow: 0 0 0 6px transparent; } }
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-title .http-badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .http-402 { background: rgba(255,184,0,0.15); color: var(--warning); }
+    .http-200 { background: var(--success-glow); color: var(--success); }
+    .step-detail {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--fg-muted);
+      line-height: 1.7;
+      word-break: break-all;
+    }
+    .step-detail .label { color: var(--fg-muted); }
+    .step-detail .value { color: var(--fg); }
+    .step-detail .highlight { color: var(--primary); }
+    .step-detail .amount { color: var(--warning); font-weight: 700; }
+    .step-detail .success-text { color: var(--success); }
+
+    /* ── Answer card ── */
+    .answer-card {
+      background: var(--surface);
+      border: 1px solid rgba(0, 211, 149, 0.25);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s, transform 0.6s;
+    }
+    .answer-card.visible { opacity: 1; transform: translateY(0); }
+    .answer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .answer-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .answer-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+    }
+    .answer-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--fg);
+    }
+    .answer-text .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 16px;
+      background: var(--primary);
+      animation: blink 0.8s infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ── TX link ── */
+    .tx-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 8px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--primary);
+      text-decoration: none;
+      transition: border-color 0.2s;
+    }
+    .tx-link:hover { border-color: var(--primary); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--fg-muted);
+    }
+    .footer a { color: var(--primary); text-decoration: none; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error ── */
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--danger);
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── Wallet Modal ── */
+    .wallet-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .wallet-modal-overlay.visible { display: flex; }
+    .wallet-modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .wallet-modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .wallet-modal-subtitle {
+      font-size: 13px;
+      color: var(--fg-muted);
+      margin-bottom: 20px;
+    }
+    .wallet-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .wallet-option:hover {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+    }
+    .wallet-option img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .wallet-option-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .wallet-option-desc {
+      font-size: 11px;
+      color: var(--fg-muted);
+    }
+    .wallet-modal-close {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+      border-radius: 8px;
+      padding: 8px;
+      width: 100%;
+      margin-top: 8px;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .wallet-modal-close:hover { color: var(--fg); border-color: var(--fg-muted); }
+    .wallet-modal-status {
+      text-align: center;
+      padding: 32px 0;
+      display: none;
+    }
+    .wallet-modal-status.visible { display: block; }
+    .wallet-modal-status .spinner { width: 24px; height: 24px; }
+    .wallet-modal-status-text {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--fg-muted);
+    }
+    .wallet-modal-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--danger);
+      display: none;
+    }
+    .wallet-modal-error.visible { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-badge">x402 Protocol &middot; Live on Conflux eSpace</div>
+    <h1>AI Settlement Demo</h1>
+    <p>Ask any question. Pay 0.01 USDT0 per query via HTTP 402.<br>No registration. No credit card. Just a wallet and a stablecoin.</p>
+  </div>
+
+  <div class="container">
+    <!-- Mode Toggle -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tabServer" onclick="switchMode('server')">Server Demo</button>
+      <button class="mode-tab" id="tabWallet" onclick="switchMode('wallet')">Pay with Wallet</button>
+    </div>
+
+    <!-- Wallet Bar (visible only in wallet mode) -->
+    <div class="wallet-bar" id="walletBar">
+      <div id="walletBarContent">
+        <button class="btn-wallet" id="btnConnect" onclick="openWalletModal()">Connect Wallet</button>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <input type="text" id="questionInput" placeholder="What is Conflux Network?" maxlength="500">
+        <button class="btn-ask" id="askBtn" onclick="runDemo()">Ask AI &mdash; 0.01 USDT0</button>
+      </div>
+      <div class="price-tag">
+        <span class="dot"></span>
+        <span id="modeLabel">Server demo</span> &middot; Chain 1030 &middot; Real USDT0 settlement
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+
+    <div class="answer-card" id="answerCard">
+      <div class="answer-header">
+        <span class="answer-label">&#x2728; AI Response</span>
+        <span class="answer-meta" id="answerMeta"></span>
+      </div>
+      <div class="answer-text" id="answerText"></div>
+      <a class="tx-link" id="txLink" href="#" target="_blank" rel="noopener" style="display:none">
+        &#x1F517; View on ConfluxScan
+      </a>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Wallet Modal -->
+  <div class="wallet-modal-overlay" id="walletModal" onclick="if(event.target===this)closeWalletModal()">
+    <div class="wallet-modal-box">
+      <div id="walletOptions">
+        <div class="wallet-modal-title">Connect Wallet</div>
+        <div class="wallet-modal-subtitle">Choose your wallet to pay with USDT0</div>
+        <div id="walletList"></div>
+        <button class="wallet-modal-close" onclick="closeWalletModal()">Cancel</button>
+      </div>
+      <div class="wallet-modal-status" id="walletStatus">
+        <div class="spinner"></div>
+        <div class="wallet-modal-status-text" id="walletStatusText">Connecting...</div>
+      </div>
+      <div class="wallet-modal-error" id="walletError"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/confluxarena/x402-boilerplate" target="_blank">x402 Boilerplate</a>
+    &middot; <a href="https://www.x402.org" target="_blank">x402 Protocol</a>
+    &middot; Settlement via EIP-3009 on Conflux eSpace
+  </div>
+
+<script type="module">
+import { WalletService } from './assets/js/services/walletService.js';
+import { x402Service } from './assets/js/services/x402Service.js';
+import { WALLET_TYPES, WALLET_INFO, getInstalledWallets } from './assets/js/config/wallets.js';
+
+// ============================================
+// STATE
+// ============================================
+
+const API = '/api/x402/ai.php';
+const PROXY = '/api/x402/ai-demo-proxy.php';
+const SCAN = 'https://evm.confluxscan.io/tx/';
+
+const STEPS = [
+  { id: 'request',  icon: '\u{1F310}', title: 'Request AI API' },
+  { id: 'balance',  icon: '\u{1F4B0}', title: 'Check USDT0 balance' },
+  { id: 'sign',     icon: '\u270D\uFE0F', title: 'Sign EIP-3009 payment' },
+  { id: 'settle',   icon: '\u{1F680}', title: 'Send paid request' },
+];
+
+let mode = 'server'; // 'server' or 'wallet'
+let running = false;
+let walletService = null;
+let connectedAddress = null;
+let connectedProvider = null;
+
+// ============================================
+// HELPERS
+// ============================================
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function shortAddr(addr) { return addr ? addr.substring(0, 6) + '...' + addr.substring(38) : ''; }
+
+// ============================================
+// MODE SWITCHING
+// ============================================
+
+window.switchMode = function(m) {
+  mode = m;
+  document.getElementById('tabServer').classList.toggle('active', m === 'server');
+  document.getElementById('tabWallet').classList.toggle('active', m === 'wallet');
+  document.getElementById('walletBar').classList.toggle('visible', m === 'wallet');
+  document.getElementById('modeLabel').textContent = m === 'server' ? 'Server demo' : 'Wallet payment';
+  updateWalletBar();
+};
+
+// ============================================
+// WALLET CONNECTION
+// ============================================
+
+function updateWalletBar() {
+  const bar = document.getElementById('walletBarContent');
+  if (connectedAddress) {
+    bar.innerHTML = `
+      <span class="wallet-address">${shortAddr(connectedAddress)}</span>
+      <button class="btn-disconnect" onclick="disconnectWallet()">Disconnect</button>
+    `;
+  } else {
+    bar.innerHTML = `<button class="btn-wallet" onclick="openWalletModal()">Connect Wallet</button>`;
+  }
+}
+
+window.openWalletModal = function() {
+  const modal = document.getElementById('walletModal');
+  const list = document.getElementById('walletList');
+  const options = document.getElementById('walletOptions');
+  const status = document.getElementById('walletStatus');
+  const error = document.getElementById('walletError');
+
+  // Reset
+  options.style.display = 'block';
+  status.classList.remove('visible');
+  error.classList.remove('visible');
+
+  // Build wallet list
+  const walletTypes = [
+    WALLET_TYPES.METAMASK,
+    WALLET_TYPES.FLUENT,
+    WALLET_TYPES.OKX,
+    WALLET_TYPES.WALLETCONNECT,
+  ];
+
+  list.innerHTML = walletTypes.map(type => {
+    const info = WALLET_INFO[type];
+    return `
+      <div class="wallet-option" onclick="connectWallet('${type}')">
+        <img src="${info.icon}" alt="${info.name}" onerror="this.style.display='none'">
+        <div>
+          <div class="wallet-option-name">${info.name}</div>
+          <div class="wallet-option-desc">${info.description}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  modal.classList.add('visible');
+};
+
+window.closeWalletModal = function() {
+  document.getElementById('walletModal').classList.remove('visible');
+};
+
+window.connectWallet = async function(type) {
+  const options = document.getElementById('walletOptions');
+  const status = document.getElementById('walletStatus');
+  const statusText = document.getElementById('walletStatusText');
+  const error = document.getElementById('walletError');
+
+  options.style.display = 'none';
+  status.classList.add('visible');
+  error.classList.remove('visible');
+  statusText.textContent = `Connecting ${WALLET_INFO[type].name}...`;
+
+  try {
+    if (!walletService) {
+      walletService = new WalletService();
+      // Wait for EIP-6963 providers to announce
+      await sleep(500);
+    }
+
+    const result = await walletService.connect(type);
+    connectedAddress = result.account;
+    connectedProvider = result.provider;
+
+    // Store provider globally for ethers.js signer creation
+    window.arenaProvider = result.provider;
+
+    closeWalletModal();
+    updateWalletBar();
+  } catch (err) {
+    status.classList.remove('visible');
+    options.style.display = 'block';
+    error.textContent = err.message;
+    error.classList.add('visible');
+  }
+};
+
+window.disconnectWallet = async function() {
+  if (walletService) {
+    await walletService.disconnect();
+  }
+  connectedAddress = null;
+  connectedProvider = null;
+  window.arenaProvider = null;
+  updateWalletBar();
+};
+
+// ============================================
+// DEMO UI
+// ============================================
+
+function resetUI() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+
+  STEPS.forEach((s) => {
+    const el = document.createElement('div');
+    el.className = 'step';
+    el.id = 'step-' + s.id;
+    el.innerHTML = `
+      <div class="step-dot pending" id="dot-${s.id}">${s.icon}</div>
+      <div class="step-card">
+        <div class="step-title">${s.title}</div>
+        <div class="step-detail" id="detail-${s.id}"></div>
+      </div>
+    `;
+    tl.appendChild(el);
+  });
+
+  document.getElementById('answerCard').classList.remove('visible');
+  document.getElementById('answerText').innerHTML = '';
+  document.getElementById('answerMeta').textContent = '';
+  document.getElementById('txLink').style.display = 'none';
+  document.getElementById('errorMsg').classList.remove('visible');
+}
+
+function showStep(id, status) {
+  const step = document.getElementById('step-' + id);
+  const dot = document.getElementById('dot-' + id);
+  if (!step) return;
+  step.classList.add('visible');
+  dot.className = 'step-dot ' + status;
+}
+
+function setDetail(id, html) {
+  const el = document.getElementById('detail-' + id);
+  if (el) el.innerHTML = html;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+async function typewriteAnswer(text, el) {
+  el.innerHTML = '';
+  const escaped = escapeHtml(text);
+  const words = escaped.split(' ');
+  let current = '';
+  for (let i = 0; i < words.length; i++) {
+    current += (i > 0 ? ' ' : '') + words[i];
+    el.innerHTML = current + '<span class="cursor"></span>';
+    await sleep(30 + Math.random() * 30);
+  }
+  el.innerHTML = current;
+}
+
+// ============================================
+// RUN DEMO: SERVER MODE
+// ============================================
+
+async function runServerDemo(question) {
+  // Step 1: GET → 402
+  showStep('request', 'active');
+  setDetail('request', '<span class="label">GET</span> <span class="value">' + escapeHtml(API + '?q=' + question.substring(0, 40)) + '...</span>');
+  await sleep(800);
+
+  const url = API + '?q=' + encodeURIComponent(question);
+  const res1 = await fetch(url);
+
+  if (res1.status !== 402) {
+    showStep('request', 'error');
+    throw new Error('Expected HTTP 402 but got ' + res1.status);
+  }
+
+  const reqHeader = res1.headers.get('PAYMENT-REQUIRED');
+  if (!reqHeader) throw new Error('Missing PAYMENT-REQUIRED header');
+
+  const requirements = JSON.parse(atob(reqHeader))[0];
+  const amountHuman = (parseInt(requirements.amount) / 1e6).toFixed(2);
+
+  showStep('request', 'done');
+  setDetail('request', `
+    <span class="http-badge http-402">HTTP 402</span> Payment Required<br>
+    <span class="label">Price:</span> <span class="amount">${escapeHtml(amountHuman)} USDT0</span><br>
+    <span class="label">Pay to:</span> <span class="highlight">${escapeHtml(requirements.payTo.substring(0, 12))}...${escapeHtml(requirements.payTo.substring(38))}</span><br>
+    <span class="label">Mode:</span> <span class="value">${escapeHtml(requirements.extra?.settlementMode || 'transfer')}</span>
+  `);
+
+  await sleep(1200);
+
+  // Step 2: Balance check (simulated)
+  showStep('balance', 'active');
+  setDetail('balance', '<span class="label">Querying on-chain balance...</span>');
+  await sleep(600);
+  showStep('balance', 'done');
+  setDetail('balance', `
+    <span class="label">Token:</span> <span class="value">USDT0 (EIP-3009)</span><br>
+    <span class="label">Required:</span> <span class="amount">${escapeHtml(amountHuman)} USDT0</span><br>
+    <span class="success-text">\u2713 Sufficient balance</span>
+  `);
+
+  await sleep(1000);
+
+  // Step 3: Sign (simulated — server handles)
+  showStep('sign', 'active');
+  setDetail('sign', '<span class="label">Signing EIP-712 typed data (server-side)...</span>');
+  await sleep(800);
+  showStep('sign', 'done');
+  setDetail('sign', `
+    <span class="label">Type:</span> <span class="value">TransferWithAuthorization</span><br>
+    <span class="success-text">\u2713 Server signed with demo wallet</span>
+  `);
+
+  await sleep(1000);
+
+  // Step 4: Send paid request via proxy
+  showStep('settle', 'active');
+  setDetail('settle', '<span class="label">Settling on-chain via facilitator...</span>');
+
+  const res2 = await fetch(PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question }),
+  });
+
+  const data = await res2.json();
+
+  if (!res2.ok || !data.success) {
+    showStep('settle', 'error');
+    throw new Error(data.message || 'Settlement failed');
+  }
+
+  return data;
+}
+
+// ============================================
+// RUN DEMO: WALLET MODE
+// ============================================
+
+async function runWalletDemo(question) {
+  if (!connectedAddress || !connectedProvider) {
+    throw new Error('Please connect your wallet first');
+  }
+
+  // Create ethers BrowserProvider + Signer from connected provider
+  const browserProvider = new ethers.BrowserProvider(connectedProvider);
+  const signer = await browserProvider.getSigner();
+
+  // Step 1: GET → 402
+  showStep('request', 'active');
+  setDetail('request', '<span class="label">GET</span> <span class="value">' + escapeHtml(API + '?q=' + question.substring(0, 40)) + '...</span>');
+  await sleep(400);
+
+  const url = API + '?q=' + encodeURIComponent(question);
+  const res1 = await fetch(url);
+
+  if (res1.status !== 402) {
+    showStep('request', 'error');
+    throw new Error('Expected HTTP 402 but got ' + res1.status);
+  }
+
+  const reqHeader = res1.headers.get('PAYMENT-REQUIRED');
+  if (!reqHeader) throw new Error('Missing PAYMENT-REQUIRED header');
+
+  const requirements = JSON.parse(atob(reqHeader))[0];
+  const amountHuman = (parseInt(requirements.amount) / 1e6).toFixed(2);
+
+  showStep('request', 'done');
+  setDetail('request', `
+    <span class="http-badge http-402">HTTP 402</span> Payment Required<br>
+    <span class="label">Price:</span> <span class="amount">${escapeHtml(amountHuman)} USDT0</span><br>
+    <span class="label">Pay to:</span> <span class="highlight">${escapeHtml(requirements.payTo.substring(0, 12))}...${escapeHtml(requirements.payTo.substring(38))}</span>
+  `);
+
+  await sleep(800);
+
+  // Step 2: Check on-chain balance
+  showStep('balance', 'active');
+  setDetail('balance', '<span class="label">Checking your USDT0 balance on-chain...</span>');
+
+  const usdt0 = new ethers.Contract(
+    requirements.asset,
+    ['function balanceOf(address) view returns (uint256)'],
+    browserProvider
+  );
+  const balance = await usdt0.balanceOf(connectedAddress);
+  const balanceHuman = ethers.formatUnits(balance, 6);
+
+  if (balance < BigInt(requirements.amount)) {
+    showStep('balance', 'error');
+    throw new Error(`Insufficient USDT0 balance: ${balanceHuman} < ${amountHuman}`);
+  }
+
+  showStep('balance', 'done');
+  setDetail('balance', `
+    <span class="label">Balance:</span> <span class="value">${escapeHtml(balanceHuman)} USDT0</span><br>
+    <span class="label">Required:</span> <span class="amount">${escapeHtml(amountHuman)} USDT0</span><br>
+    <span class="success-text">\u2713 Sufficient balance</span>
+  `);
+
+  await sleep(600);
+
+  // Step 3: Sign EIP-3009 via wallet
+  showStep('sign', 'active');
+  setDetail('sign', '<span class="label">Please approve the signature in your wallet...</span>');
+
+  const nonce = ethers.hexlify(ethers.randomBytes(32));
+  const validBefore = Math.floor(Date.now() / 1000) + 3600;
+
+  const domain = {
+    name: requirements.extra.name,
+    version: requirements.extra.version,
+    chainId: 1030,
+    verifyingContract: requirements.asset,
+  };
+
+  const types = {
+    TransferWithAuthorization: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'validAfter', type: 'uint256' },
+      { name: 'validBefore', type: 'uint256' },
+      { name: 'nonce', type: 'bytes32' },
+    ],
+  };
+
+  const message = {
+    from: connectedAddress,
+    to: requirements.payTo,
+    value: requirements.amount,
+    validAfter: '0',
+    validBefore: String(validBefore),
+    nonce,
+  };
+
+  const signature = await signer.signTypedData(domain, types, message);
+
+  showStep('sign', 'done');
+  setDetail('sign', `
+    <span class="label">From:</span> <span class="highlight">${shortAddr(connectedAddress)}</span><br>
+    <span class="label">Signature:</span> <span class="value">${escapeHtml(signature.substring(0, 22))}...</span><br>
+    <span class="success-text">\u2713 Signed with your wallet</span>
+  `);
+
+  await sleep(600);
+
+  // Step 4: Send paid request with PAYMENT-SIGNATURE
+  showStep('settle', 'active');
+  setDetail('settle', '<span class="label">Settling on-chain...</span>');
+
+  const x402Payload = {
+    x402Version: 2,
+    scheme: 'exact',
+    network: 'eip155:1030',
+    payload: {
+      signature,
+      authorization: message,
+    },
+  };
+
+  const paymentSig = btoa(JSON.stringify(x402Payload));
+  const paidRes = await fetch(url, {
+    headers: { 'PAYMENT-SIGNATURE': paymentSig },
+  });
+
+  const data = await paidRes.json();
+
+  if (!paidRes.ok || !data.success) {
+    showStep('settle', 'error');
+    throw new Error(data.message || 'Payment failed');
+  }
+
+  return data;
+}
+
+// ============================================
+// MAIN RUN HANDLER
+// ============================================
+
+window.runDemo = async function() {
+  if (running) return;
+  running = true;
+
+  const btn = document.getElementById('askBtn');
+  const input = document.getElementById('questionInput');
+  const question = input.value.trim() || 'What is Conflux Network?';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Processing...';
+  resetUI();
+
+  try {
+    let data;
+
+    if (mode === 'wallet') {
+      data = await runWalletDemo(question);
+    } else {
+      data = await runServerDemo(question);
+    }
+
+    // Show settlement result
+    const txHash = data.data?.payment?.tx_hash || '';
+    showStep('settle', 'done');
+    setDetail('settle', `
+      <span class="http-badge http-200">HTTP 200</span> Paid & Settled<br>
+      <span class="label">TX:</span> <span class="highlight">${escapeHtml(txHash.substring(0, 18))}...</span><br>
+      <span class="label">Payer:</span> <span class="value">${escapeHtml((data.data?.payment?.payer || '').substring(0, 12))}...</span><br>
+      <span class="label">Cost:</span> <span class="amount">${escapeHtml(data.data?.payment?.amount || '0.01')} USDT0</span>
+    `);
+
+    await sleep(800);
+
+    // Show answer
+    const card = document.getElementById('answerCard');
+    card.classList.add('visible');
+
+    document.getElementById('answerMeta').textContent =
+      (data.data?.tokens_used || 0) + ' tokens \u00B7 ' + (data.data?.model || 'claude-3-5-haiku');
+
+    if (txHash) {
+      const txLinkEl = document.getElementById('txLink');
+      txLinkEl.href = SCAN + txHash;
+      txLinkEl.style.display = 'inline-flex';
+    }
+
+    await sleep(400);
+    await typewriteAnswer(data.data?.answer || 'No response received.', document.getElementById('answerText'));
+
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    running = false;
+    btn.disabled = false;
+    btn.innerHTML = 'Ask AI &mdash; 0.01 USDT0';
+  }
+};
+
+// Enter key to submit
+document.getElementById('questionInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !running) window.runDemo();
+});
+</script>
+
+</body>
+</html>

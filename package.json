@@ -1,0 +1,13 @@
+{
+  "name": "x402-boilerplate",
+  "version": "1.0.0",
+  "description": "x402 Protocol boilerplate — paid AI API with on-chain USDT0 settlement on Conflux eSpace",
+  "private": true,
+  "scripts": {
+    "facilitator": "node facilitator/x402-facilitator.cjs",
+    "agent": "node agent/x402-ai-agent-demo.cjs"
+  },
+  "dependencies": {
+    "ethers": "^6.7.0"
+  }
+}

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: x402
+      POSTGRES_USER: x402
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-x402_secret}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U x402"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # PHP backend (Apache + PHP-FPM)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      facilitator:
+        condition: service_started
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_PGSQL_HOST=db
+      - DB_PGSQL_PORT=5432
+      - DB_PGSQL_NAME=x402
+      - DB_PGSQL_USER=x402
+
+  # x402 Facilitator (Node.js)
+  facilitator:
+    image: node:20-alpine
+    restart: unless-stopped
+    working_dir: /app
+    command: node facilitator/x402-facilitator.cjs
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    network_mode: "service:web"
+
+volumes:
+  pgdata:
