@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS x402_api_payments (
     question TEXT,
     answer_length INTEGER DEFAULT 0,
     tokens_used INTEGER DEFAULT 0,
+    invoice_id VARCHAR(64),
+    nonce VARCHAR(64),
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

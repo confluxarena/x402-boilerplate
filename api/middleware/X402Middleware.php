@@ -135,9 +135,24 @@ class X402Middleware {
     }
 
     private static function send402(array $requirements): void {
+        $invoiceId = bin2hex(random_bytes(16));
+        $nonce = bin2hex(random_bytes(16));
+        $expiry = time() + 3600;
+        $endpoint = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
+
         http_response_code(402);
         header('Content-Type: application/json');
+
+        // x402.org V2 payload (primary — used by agent, frontend, facilitator)
         header(self::HEADER_PAYMENT_REQUIRED . ': ' . base64_encode(json_encode([$requirements])));
+
+        // Bounty #11 spec compatibility headers (interoperability)
+        header('X-Payment-Amount: ' . $requirements['amount']);
+        header('X-Payment-Token: ' . $requirements['asset']);
+        header('X-Payment-Nonce: ' . $nonce);
+        header('X-Payment-Expiry: ' . $expiry);
+        header('X-Payment-Endpoint: ' . $endpoint);
+        header('X-Payment-Invoice-Id: ' . $invoiceId);
 
         echo json_encode([
             'success' => false,

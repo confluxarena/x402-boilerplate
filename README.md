@@ -117,7 +117,7 @@ x402-boilerplate/
 ├── database/
 │   └── schema.sql              # PostgreSQL schema
 ├── tests/
-│   └── integration.cjs         # 79 integration tests (npm test)
+│   └── integration.cjs         # 87 integration tests (npm test)
 ├── x402-demo.html              # Demo page (server + wallet modes)
 ├── docker-compose.yml
 ├── Dockerfile
@@ -127,6 +127,20 @@ x402-boilerplate/
 ---
 
 ## x402 Protocol Flow
+
+### HTTP 402 Response Headers
+
+The seller responds with both [x402.org V2](https://www.x402.org) payload and individual headers for maximum interoperability:
+
+| Header | Example | Description |
+|--------|---------|-------------|
+| `PAYMENT-REQUIRED` | `base64(JSON)` | x402 V2 full payment requirements (primary) |
+| `X-Payment-Amount` | `10000` | Amount in token units (10000 = 0.01 USDT0) |
+| `X-Payment-Token` | `0xaf37e8...` | Token contract address |
+| `X-Payment-Nonce` | `a1b2c3d4...` | Unique request nonce (hex) |
+| `X-Payment-Expiry` | `1738700000` | Unix timestamp — payment deadline |
+| `X-Payment-Endpoint` | `/api/x402/ai` | Endpoint path requiring payment |
+| `X-Payment-Invoice-Id` | `e5f6a7b8...` | Ephemeral invoice identifier (hex) |
 
 ### Direct Transfer (Default)
 
@@ -271,7 +285,7 @@ DEMO_BUYER_KEY=0x... API_URL=http://localhost/api/x402/ai.php \
 
 ```bash
 npm test
-# 79 integration tests: paths, consistency, security, EIP-712 domains
+# 87 integration tests: paths, consistency, security, EIP-712 domains, X-Payment headers
 ```
 
 ---

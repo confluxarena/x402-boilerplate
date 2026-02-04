@@ -228,6 +228,18 @@ ciContent.includes('npm test') ? pass('CI runs npm test') : fail('CI missing npm
 ciContent.includes('php -l') ? pass('CI runs PHP lint') : fail('CI missing PHP lint');
 
 // ============================================
+// 12. X-Payment Headers (Bounty #11 Spec)
+// ============================================
+
+console.log('\n=== 12. X-Payment Headers ===');
+var middleware = fs.readFileSync('api/middleware/X402Middleware.php', 'utf-8');
+['X-Payment-Amount', 'X-Payment-Token', 'X-Payment-Nonce', 'X-Payment-Expiry', 'X-Payment-Endpoint', 'X-Payment-Invoice-Id'].forEach(function(h) {
+  middleware.includes(h) ? pass('Middleware sends ' + h) : fail('Middleware missing ' + h);
+});
+middleware.includes('random_bytes') ? pass('Nonce uses cryptographic random') : fail('Nonce not cryptographically random');
+middleware.includes('HEADER_PAYMENT_REQUIRED') ? pass('PAYMENT-REQUIRED header preserved') : fail('PAYMENT-REQUIRED header removed');
+
+// ============================================
 // RESULTS
 // ============================================
 
