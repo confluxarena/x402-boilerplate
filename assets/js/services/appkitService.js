@@ -55,7 +55,6 @@ class AppKitService {
     this.address = null;
     this.isInitialized = false;
     this.initPromise = null;
-    this.cdnLoaded = false;
     // Track connection state
     this._lastAddress = null;
     this._isWaitingForConnection = false;  // Only dispatch events when actively connecting
@@ -87,24 +86,6 @@ class AppKitService {
     } catch (e) {
       console.warn('[AppKit] Error clearing sessions:', e);
     }
-  }
-
-  // Load AppKit CDN script
-  async loadCDN() {
-    if (this.cdnLoaded || window.AppKit) return;
-
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.src = 'https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.14/dist/appkit.js';
-      script.onload = () => {
-        this.cdnLoaded = true;
-        console.log('[AppKit] CDN loaded');
-        resolve();
-      };
-      script.onerror = () => reject(new Error('Failed to load AppKit CDN'));
-      document.head.appendChild(script);
-    });
   }
 
   async initialize() {

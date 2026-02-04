@@ -1,5 +1,5 @@
 /**
- * x402 V2 Client Service for PayFi Escrow
+ * x402 V2 Client Service
  *
  * Handles the x402 payment flow:
  * 1. Request → 402 + PAYMENT-REQUIRED
@@ -116,8 +116,8 @@ class X402Service {
 
     const message = {
       from: address,
-      to: requirements.payTo,      // X402EscrowAdapter address
-      value: requirements.amount,   // amount + fee
+      to: requirements.payTo,      // treasury (transfer) or adapter (escrow)
+      value: requirements.amount,
       validAfter: String(validAfter),
       validBefore: String(validBefore),
       nonce,
