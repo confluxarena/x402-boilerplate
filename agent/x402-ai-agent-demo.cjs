@@ -24,6 +24,11 @@ const RPC_URL = 'https://evm.confluxrpc.com';
 const CHAIN_ID = 1030;
 const CONFLUXSCAN = 'https://evm.confluxscan.io/tx/';
 
+// Spending cap (in USDT0). Default: 1.00 USDT0 per session.
+// Set AGENT_SPEND_CAP=0 to disable.
+const SPEND_CAP = parseFloat(process.env.AGENT_SPEND_CAP || '1.0');
+let totalSpent = 0;
+
 const TRANSFER_AUTH_TYPES = {
     TransferWithAuthorization: [
         { name: 'from', type: 'address' },
@@ -175,6 +180,18 @@ async function main() {
 
     console.log(`\n  ${c.green}\u2713 Sufficient balance${c.reset}`);
 
+    // Spending cap check
+    if (SPEND_CAP > 0) {
+        kv('Spend cap', `${SPEND_CAP} USDT0`, c.dim);
+        kv('Spent so far', `${totalSpent.toFixed(6)} USDT0`, c.dim);
+        if (totalSpent + amountHuman > SPEND_CAP) {
+            console.log(`\n  ${c.bgRed}${c.white} SPENDING CAP EXCEEDED ${c.reset}`);
+            console.log(`  ${c.red}Would exceed ${SPEND_CAP} USDT0 limit. Set AGENT_SPEND_CAP to increase.${c.reset}`);
+            process.exit(1);
+        }
+        console.log(`  ${c.green}\u2713 Within spending cap${c.reset}`);
+    }
+
     await sleep(1200);
 
     // ════════════════════════════════════════════
@@ -261,6 +278,7 @@ async function main() {
     }
 
     await sleep(300);
+    totalSpent += amountHuman;
     console.log(`\n  ${c.bgGreen}${c.white}${c.bold} HTTP 200 — PAID & SETTLED ${c.reset}`);
 
     await sleep(1000);

@@ -208,6 +208,26 @@ var allUse1030 = domainFiles.every(function(c) { return c.includes('1030'); });
 allUse1030 ? pass('ChainId 1030 used in all signing files') : fail('ChainId mismatch in signing files');
 
 // ============================================
+// 10. Agent Safety Controls
+// ============================================
+
+console.log('\n=== 10. Agent Safety Controls ===');
+agent.includes('SPEND_CAP') ? pass('Agent has spending cap') : fail('Agent missing spending cap');
+agent.includes('AGENT_SPEND_CAP') ? pass('Agent reads AGENT_SPEND_CAP env var') : fail('Agent missing AGENT_SPEND_CAP env');
+agent.includes('totalSpent') ? pass('Agent tracks total spending') : fail('Agent missing spend tracking');
+envContent.includes('AGENT_SPEND_CAP') ? pass('.env.example has AGENT_SPEND_CAP') : fail('.env.example missing AGENT_SPEND_CAP');
+
+// ============================================
+// 11. CI/CD
+// ============================================
+
+console.log('\n=== 11. CI/CD ===');
+fs.existsSync('.github/workflows/ci.yml') ? pass('GitHub Actions CI workflow exists') : fail('GitHub Actions CI missing');
+var ciContent = fs.readFileSync('.github/workflows/ci.yml', 'utf-8');
+ciContent.includes('npm test') ? pass('CI runs npm test') : fail('CI missing npm test');
+ciContent.includes('php -l') ? pass('CI runs PHP lint') : fail('CI missing PHP lint');
+
+// ============================================
 // RESULTS
 // ============================================
 
