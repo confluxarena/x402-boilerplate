@@ -3,7 +3,7 @@
  * x402 Paid AI API Endpoint
  *
  * AI question-answering endpoint protected by x402 protocol.
- * Payment: 0.01 USDT0 per request via direct EIP-3009 transfer (buyer → treasury).
+ * Payment: 0.0001 USDT0 per request via direct EIP-3009 transfer (buyer → treasury).
  *
  * Usage:
  *   GET /api/x402/ai.php?q=What+is+Conflux
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 // Configuration
 $treasury = EnvLoader::get('X402_API_TREASURY', '');
-$price = (int) EnvLoader::get('X402_API_PRICE', '10000'); // 0.01 USDT0 (6 decimals)
+$price = (int) EnvLoader::get('X402_API_PRICE', '100'); // 0.0001 USDT0 (6 decimals)
 $claudeApiKey = EnvLoader::get('CLAUDE_API_KEY', '');
 $claudeModel = EnvLoader::get('CLAUDE_MODEL', 'claude-3-5-haiku-20241022');
 
@@ -66,7 +66,7 @@ $requirements = [
         'settlementMode' => 'transfer',
         'name' => 'USDT0',
         'version' => '1',
-        'description' => 'AI API query — 0.01 USDT0 per request',
+        'description' => 'AI API query — 0.0001 USDT0 per request',
     ],
 ];
 
@@ -171,7 +171,7 @@ Response::success([
     'payment' => [
         'tx_hash' => $settlement['transaction'] ?? null,
         'payer' => $settlement['payer'] ?? null,
-        'amount' => '0.01',
+        'amount' => '0.0001',
         'token' => 'USDT0',
     ],
 ]);

@@ -9,7 +9,7 @@
 [![Conflux eSpace](https://img.shields.io/badge/Conflux_eSpace-1030-00BFFF.svg)](https://confluxnetwork.org/)
 [![x402](https://img.shields.io/badge/x402-V2-FF6B00.svg)](https://www.x402.org)
 
-Users pay **0.01 USDT0** per AI query via **EIP-3009 `transferWithAuthorization`** — gasless for the buyer, settled on-chain by the facilitator.
+Users pay **0.0001 USDT0** per AI query via **EIP-3009 `transferWithAuthorization`** — gasless for the buyer, settled on-chain by the facilitator.
 
 ---
 
@@ -135,7 +135,7 @@ The seller responds with both [x402.org V2](https://www.x402.org) payload and in
 | Header | Example | Description |
 |--------|---------|-------------|
 | `PAYMENT-REQUIRED` | `base64(JSON)` | x402 V2 full payment requirements (primary) |
-| `X-Payment-Amount` | `10000` | Amount in token units (10000 = 0.01 USDT0) |
+| `X-Payment-Amount` | `100` | Amount in token units (100 = 0.0001 USDT0) |
 | `X-Payment-Token` | `0xaf37e8...` | Token contract address |
 | `X-Payment-Nonce` | `a1b2c3d4...` | Unique request nonce (hex) |
 | `X-Payment-Expiry` | `1738700000` | Unix timestamp — payment deadline |
@@ -300,7 +300,7 @@ npm test
 | `CLAUDE_API_KEY` | Yes | Anthropic API key for AI responses |
 | `DEMO_BUYER_KEY` | No | Demo wallet key (for server-side demo mode) |
 | `DB_PGSQL_*` | Yes | PostgreSQL connection details |
-| `X402_API_PRICE` | No | Price per query in token units (default: `10000` = 0.01 USDT0) |
+| `X402_API_PRICE` | No | Price per query in token units (default: `100` = 0.0001 USDT0) |
 | `CLAUDE_MODEL` | No | Claude model (default: `claude-3-5-haiku-20241022`) |
 | `APP_URL` | No | App URL for CORS (default: `http://localhost`) |
 

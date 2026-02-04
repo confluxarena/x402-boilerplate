@@ -503,7 +503,7 @@
   <div class="hero">
     <div class="hero-badge">x402 Protocol &middot; Live on Conflux eSpace</div>
     <h1>AI Settlement Demo</h1>
-    <p>Ask any question. Pay 0.01 USDT0 per query via HTTP 402.<br>No registration. No credit card. Just a wallet and a stablecoin.</p>
+    <p>Ask any question. Pay 0.0001 USDT0 per query via HTTP 402.<br>No registration. No credit card. Just a wallet and a stablecoin.</p>
   </div>
 
   <div class="container">
@@ -523,7 +523,7 @@
     <div class="input-area">
       <div class="input-row">
         <input type="text" id="questionInput" placeholder="What is Conflux Network?" maxlength="500">
-        <button class="btn-ask" id="askBtn" onclick="runDemo()">Ask AI &mdash; 0.01 USDT0</button>
+        <button class="btn-ask" id="askBtn" onclick="runDemo()">Ask AI &mdash; 0.0001 USDT0</button>
       </div>
       <div class="price-tag">
         <span class="dot"></span>
@@ -1085,7 +1085,7 @@ window.runDemo = async function() {
   } finally {
     running = false;
     btn.disabled = false;
-    btn.innerHTML = 'Ask AI &mdash; 0.01 USDT0';
+    btn.innerHTML = 'Ask AI &mdash; 0.0001 USDT0';
   }
 };
 
