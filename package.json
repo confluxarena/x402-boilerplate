@@ -9,7 +9,8 @@
   },
   "scripts": {
     "facilitator": "node facilitator/x402-facilitator.cjs",
-    "agent": "node agent/x402-ai-agent-demo.cjs"
+    "agent": "node agent/x402-ai-agent-demo.cjs",
+    "test": "node tests/integration.cjs"
   },
   "engines": {
     "node": ">=20.0.0"

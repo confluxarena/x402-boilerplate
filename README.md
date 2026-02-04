@@ -116,6 +116,8 @@ x402-boilerplate/
 │   └── x402-ai-agent-demo.cjs  # Standalone CLI agent
 ├── database/
 │   └── schema.sql              # PostgreSQL schema
+├── tests/
+│   └── integration.cjs         # 72 integration tests (npm test)
 ├── x402-demo.html              # Demo page (server + wallet modes)
 ├── docker-compose.yml
 ├── Dockerfile
@@ -263,6 +265,13 @@ curl -i "http://localhost/api/x402/ai.php?q=What+is+Conflux"
 # Step 2: Run agent to pay and get answer
 DEMO_BUYER_KEY=0x... API_URL=http://localhost/api/x402/ai.php \
   node agent/x402-ai-agent-demo.cjs "What is Conflux?"
+```
+
+### 6. Run Tests
+
+```bash
+npm test
+# 72 integration tests: paths, consistency, security, EIP-712 domains
 ```
 
 ---
