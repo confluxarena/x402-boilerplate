@@ -117,7 +117,7 @@ x402-boilerplate/
 ├── database/
 │   └── schema.sql              # PostgreSQL schema
 ├── tests/
-│   └── integration.cjs         # 72 integration tests (npm test)
+│   └── integration.cjs         # 79 integration tests (npm test)
 ├── x402-demo.html              # Demo page (server + wallet modes)
 ├── docker-compose.yml
 ├── Dockerfile
@@ -271,7 +271,7 @@ DEMO_BUYER_KEY=0x... API_URL=http://localhost/api/x402/ai.php \
 
 ```bash
 npm test
-# 72 integration tests: paths, consistency, security, EIP-712 domains
+# 79 integration tests: paths, consistency, security, EIP-712 domains
 ```
 
 ---
