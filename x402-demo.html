@@ -869,6 +869,34 @@ async function runWalletDemo(question) {
 
   // Create ethers BrowserProvider + Signer from connected provider
   const browserProvider = new ethers.BrowserProvider(connectedProvider);
+
+  // Ensure wallet is on Conflux eSpace (chain 1030)
+  const network = await browserProvider.getNetwork();
+  if (Number(network.chainId) !== 1030) {
+    try {
+      await connectedProvider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x406' }], // 1030 = 0x406
+      });
+    } catch (switchError) {
+      // Chain not added — add it via EIP-3085
+      if (switchError.code === 4902 || switchError.code === -32603) {
+        await connectedProvider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: '0x406',
+            chainName: 'Conflux eSpace',
+            nativeCurrency: { name: 'CFX', symbol: 'CFX', decimals: 18 },
+            rpcUrls: ['https://evm.confluxrpc.com'],
+            blockExplorerUrls: ['https://evm.confluxscan.io'],
+          }],
+        });
+      } else {
+        throw new Error('Please switch your wallet to Conflux eSpace (chain 1030)');
+      }
+    }
+  }
+
   const signer = await browserProvider.getSigner();
 
   // Step 1: GET → 402
