@@ -10,10 +10,8 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod rewrite headers
 
 # Configure Apache
-RUN echo '<Directory /var/www/html>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' > /etc/apache2/conf-available/x402.conf \
+RUN printf '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n</Directory>\n' \
+    > /etc/apache2/conf-available/x402.conf \
     && a2enconf x402
 
 WORKDIR /var/www/html

@@ -30,10 +30,10 @@ const confluxEspace = {
 // Note: redirect is NOT needed for connecting TO wallets
 // It's only used if you're building a WALLET app that needs to redirect back to dApp
 const metadata = {
-  name: 'Conflux Arena',
-  description: 'Conflux Arena - Gaming and DeFi Quest Platform',
-  url: 'https://confluxarena.org',
-  icons: ['https://confluxarena.org/assets/images/logos/ArenaLogo.png']
+  name: 'x402 Boilerplate',
+  description: 'x402 Protocol — Paid AI API on Conflux eSpace',
+  url: window.location.origin,
+  icons: []
 };
 
 // Featured wallet IDs from WalletConnect Explorer

@@ -46,7 +46,7 @@ services:
     image: node:20-alpine
     restart: unless-stopped
     working_dir: /app
-    command: node facilitator/x402-facilitator.cjs
+    command: sh -c "npm install --production && node facilitator/x402-facilitator.cjs"
     volumes:
       - .:/app
     env_file:

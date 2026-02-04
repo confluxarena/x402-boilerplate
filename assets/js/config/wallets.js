@@ -126,13 +126,14 @@ export const WALLET_INFO = {
 };
 
 // WalletConnect Project Configuration
+// Get your own projectId at https://cloud.reown.com
 export const WALLETCONNECT_CONFIG = {
   projectId: '11b226f3b4df0a5e1faefb396f421a79',
   metadata: {
-    name: 'CONFLUX ARENA',
-    description: 'Conflux Arena - Gaming and DeFi Platform',
-    url: 'https://confluxarena.org',
-    icons: ['https://confluxarena.org/assets/images/logos/ArenaLogo.png'],
+    name: 'x402 Boilerplate',
+    description: 'x402 Protocol — Paid AI API on Conflux eSpace',
+    url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
+    icons: [],
   },
   themeMode: 'dark', // 'light' | 'dark' | 'auto'
   themeVariables: {

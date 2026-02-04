@@ -8,7 +8,7 @@
  * 4. Retry with PAYMENT-SIGNATURE
  * 5. Parse PAYMENT-RESPONSE
  *
- * @package ConfluxArena
+ * @package x402-boilerplate
  * @version 1.0.0
  * @since 2026-02-03
  */
@@ -79,7 +79,7 @@ class X402Service {
     return requirementsList.find(r =>
       r.scheme === 'exact' &&
       r.network === this.network &&
-      r.extra?.assetTransferMethod === 'eip3009'
+      (r.extra?.settlementMode === 'transfer' || r.extra?.assetTransferMethod === 'eip3009')
     );
   }
 

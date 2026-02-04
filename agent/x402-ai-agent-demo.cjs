@@ -8,7 +8,7 @@
  * Usage:
  *   DEMO_BUYER_KEY=0x... node x402-ai-agent-demo.cjs "What is Conflux?"
  *
- * @package ConfluxArena
+ * @package x402-boilerplate
  * @version 2.0.0
  * @since 2026-02-03
  */
@@ -19,7 +19,7 @@ const { ethers } = require('ethers');
 // CONFIGURATION
 // ============================================
 
-const API_URL = process.env.API_URL || 'https://confluxarena.org/api/x402/ai.php';
+const API_URL = process.env.API_URL || 'http://localhost/api/x402/ai.php';
 const RPC_URL = 'https://evm.confluxrpc.com';
 const CHAIN_ID = 1030;
 const CONFLUXSCAN = 'https://evm.confluxscan.io/tx/';
