@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "resources": [
+    "https://confluxarena.org/api/x402/ai.php"
+  ],
+  "ownershipProofs": [
+    "0x923d18d41304005848bf48cfc2133ac4b07cb8863cc1a84099afa515aa776db821739f14d5b3690250e83243cf4fbcc9fb203df131c597781162e52dc75b67fb1c"
+  ],
+  "instructions": "# Conflux Arena — x402 AI API\n\nPaid AI endpoint powered by Claude. Pay 0.0001 USDT0 per query via EIP-3009 `transferWithAuthorization` — gasless for the buyer.\n\n- **Network:** Conflux eSpace (Chain ID 1030)\n- **Token:** USDT0 (6 decimals)\n- **Price:** 100 units = 0.0001 USDT0\n- **Settlement:** Direct transfer via facilitator\n\n## Links\n\n- [Live Demo](https://confluxarena.org/x402-demo)\n- [Source Code](https://github.com/confluxarena/x402-boilerplate)\n- [Platform](https://confluxarena.org)"
+}
