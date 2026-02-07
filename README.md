@@ -120,6 +120,8 @@ x402-boilerplate/
 │   └── schema.sql              # PostgreSQL schema
 ├── tests/
 │   └── integration.cjs         # 87 integration tests (npm test)
+├── .well-known/
+│   └── x402                    # Discovery document (x402scan.com)
 ├── x402-demo.html              # Demo page (server + wallet modes)
 ├── docker-compose.yml
 ├── Dockerfile
@@ -132,17 +134,52 @@ x402-boilerplate/
 
 ### HTTP 402 Response Headers
 
-The seller responds with both [x402.org V2](https://www.x402.org) payload and individual headers for maximum interoperability:
+The seller responds with a full [x402 V2 `PaymentRequired` envelope](https://github.com/coinbase/x402/blob/main/specs/transports-v2/http.md) and individual headers for maximum interoperability:
 
 | Header | Example | Description |
 |--------|---------|-------------|
-| `PAYMENT-REQUIRED` | `base64(JSON)` | x402 V2 full payment requirements (primary) |
+| `PAYMENT-REQUIRED` | `base64(JSON)` | x402 V2 `PaymentRequired` envelope (see below) |
 | `X-Payment-Amount` | `100` | Amount in token units (100 = 0.0001 USDT0) |
 | `X-Payment-Token` | `0xaf37e8...` | Token contract address |
 | `X-Payment-Nonce` | `a1b2c3d4...` | Unique request nonce (hex) |
 | `X-Payment-Expiry` | `1738700000` | Unix timestamp — payment deadline |
 | `X-Payment-Endpoint` | `/api/x402/ai` | Endpoint path requiring payment |
 | `X-Payment-Invoice-Id` | `e5f6a7b8...` | Ephemeral invoice identifier (hex) |
+
+### PaymentRequired Envelope (V2)
+
+The `PAYMENT-REQUIRED` header decodes to the full [x402 V2 spec](https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md) object with [Bazaar Discovery Extension](https://github.com/coinbase/x402/tree/main/typescript/packages/extensions/src/bazaar):
+
+```json
+{
+  "x402Version": 2,
+  "resource": {
+    "url": "https://confluxarena.org/api/x402/ai.php",
+    "description": "AI API query — 0.0001 USDT0 per request",
+    "mimeType": "application/json"
+  },
+  "accepts": [{
+    "scheme": "exact",
+    "network": "eip155:1030",
+    "amount": "100",
+    "asset": "0xaf37e8b6c9ed7f6318979f56fc287d76c30847ff",
+    "payTo": "0x2E5C...",
+    "maxTimeoutSeconds": 3600,
+    "extra": { "settlementMode": "transfer", "name": "USDT0", "version": "1" }
+  }],
+  "extensions": {
+    "bazaar": {
+      "info": {
+        "input": { "type": "http", "method": "GET", "queryParams": { "q": "What is Conflux?" } },
+        "output": { "type": "json", "example": { "success": true, "data": { "answer": "..." } } }
+      },
+      "schema": { "$schema": "https://json-schema.org/draft/2020-12/schema", "..." }
+    }
+  }
+}
+```
+
+**Discovery document** at `/.well-known/x402` enables automatic resource discovery by [x402scan.com](https://x402scan.com) and other ecosystem tools.
 
 ### Direct Transfer (Default)
 
@@ -342,7 +379,8 @@ npm test
 
 | Standard | Purpose |
 |----------|---------|
-| [x402 V2](https://www.x402.org) | HTTP 402 Payment Required protocol |
+| [x402 V2](https://www.x402.org) | HTTP 402 Payment Required protocol (full `PaymentRequired` envelope) |
+| [x402 Bazaar Extension](https://github.com/coinbase/x402/tree/main/typescript/packages/extensions/src/bazaar) | Machine-readable input/output schemas for AI agent discovery |
 | [EIP-3009](https://eips.ethereum.org/EIPS/eip-3009) | `transferWithAuthorization` (gasless for buyer) |
 | [EIP-712](https://eips.ethereum.org/EIPS/eip-712) | Typed structured data signing |
 | [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963) | Multi Injected Provider Discovery |
