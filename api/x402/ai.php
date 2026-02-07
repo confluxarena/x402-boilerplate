@@ -46,15 +46,6 @@ if (empty($treasury)) {
     Response::error('Treasury address not configured', 503, 'SRV_SERVICE_UNAVAILABLE');
 }
 
-// Validate question
-$question = trim($_GET['q'] ?? '');
-if (empty($question)) {
-    Response::error('Query parameter "q" is required', 422, 'VAL_REQUIRED_FIELD');
-}
-if (strlen($question) > 500) {
-    Response::error('Question too long (max 500 characters)', 422, 'VAL_INVALID_FORMAT');
-}
-
 // Build x402 payment requirements
 $requirements = [
     'scheme' => 'exact',
@@ -70,12 +61,21 @@ $requirements = [
     ],
 ];
 
-// x402 payment gate
+// x402 payment gate (MUST come before input validation — scanners expect 402 on bare GET)
 $settlement = X402Middleware::handleTransfer($requirements);
 
 // If we reach here, payment was successful
 if (!$settlement) {
     exit; // 402 was already sent
+}
+
+// Validate question (only after payment is confirmed)
+$question = trim($_GET['q'] ?? '');
+if (empty($question)) {
+    Response::error('Query parameter "q" is required', 422, 'VAL_REQUIRED_FIELD');
+}
+if (strlen($question) > 500) {
+    Response::error('Question too long (max 500 characters)', 422, 'VAL_INVALID_FORMAT');
 }
 
 // Call Claude API
