@@ -61,8 +61,73 @@ $requirements = [
     ],
 ];
 
+// Bazaar Discovery Extension (x402 V2 — enables x402scan input/output schema)
+$extensions = [
+    'bazaar' => [
+        'info' => [
+            'input' => [
+                'type' => 'http',
+                'method' => 'GET',
+                'queryParams' => ['q' => 'What is Conflux?'],
+            ],
+            'output' => [
+                'type' => 'json',
+                'example' => [
+                    'success' => true,
+                    'data' => [
+                        'answer' => 'Conflux is a high-throughput blockchain combining Proof of Work and Proof of Stake consensus...',
+                        'model' => 'claude-3-5-haiku-20241022',
+                        'tokens_used' => 150,
+                        'payment' => [
+                            'tx_hash' => '0x...',
+                            'payer' => '0x...',
+                            'amount' => '0.0001',
+                            'token' => 'USDT0',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'schema' => [
+            '$schema' => 'https://json-schema.org/draft/2020-12/schema',
+            'type' => 'object',
+            'properties' => [
+                'input' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string', 'const' => 'http'],
+                        'method' => ['type' => 'string', 'enum' => ['GET']],
+                        'queryParams' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'q' => [
+                                    'type' => 'string',
+                                    'description' => 'Question to ask the AI (max 500 characters)',
+                                    'maxLength' => 500,
+                                ],
+                            ],
+                            'required' => ['q'],
+                        ],
+                    ],
+                    'required' => ['type'],
+                    'additionalProperties' => false,
+                ],
+                'output' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'example' => ['type' => 'object'],
+                    ],
+                    'required' => ['type'],
+                ],
+            ],
+            'required' => ['input'],
+        ],
+    ],
+];
+
 // x402 payment gate (MUST come before input validation — scanners expect 402 on bare GET)
-$settlement = X402Middleware::handleTransfer($requirements);
+$settlement = X402Middleware::handleTransfer($requirements, $extensions);
 
 // If we reach here, payment was successful
 if (!$settlement) {

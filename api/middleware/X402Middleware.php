@@ -26,11 +26,11 @@ class X402Middleware {
      * @param array $requirements PaymentRequirements array
      * @return array|null Returns settlement result or null if 402 sent
      */
-    public static function handle(array $requirements): ?array {
+    public static function handle(array $requirements, array $extensions = []): ?array {
         $paymentHeader = self::getPaymentHeader();
 
         if ($paymentHeader === null) {
-            self::send402($requirements);
+            self::send402($requirements, $extensions);
             return null;
         }
 
@@ -80,11 +80,11 @@ class X402Middleware {
      * @param array $requirements PaymentRequirements array
      * @return array|null Returns settlement result or null if 402 sent
      */
-    public static function handleTransfer(array $requirements): ?array {
+    public static function handleTransfer(array $requirements, array $extensions = []): ?array {
         $paymentHeader = self::getPaymentHeader();
 
         if ($paymentHeader === null) {
-            self::send402($requirements);
+            self::send402($requirements, $extensions);
             return null;
         }
 
@@ -134,7 +134,7 @@ class X402Middleware {
             ?? null;
     }
 
-    private static function send402(array $requirements): void {
+    private static function send402(array $requirements, array $extensions = []): void {
         $invoiceId = bin2hex(random_bytes(16));
         $nonce = bin2hex(random_bytes(16));
         $expiry = time() + 3600;
@@ -159,6 +159,7 @@ class X402Middleware {
                 'mimeType' => 'application/json',
             ],
             'accepts' => [$requirements],
+            'extensions' => !empty($extensions) ? $extensions : new \stdClass(),
         ];
 
         http_response_code(402);
