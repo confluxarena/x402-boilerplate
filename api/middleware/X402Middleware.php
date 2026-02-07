@@ -140,11 +140,32 @@ class X402Middleware {
         $expiry = time() + 3600;
         $endpoint = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
 
+        // Add maxTimeoutSeconds if not present (required by spec)
+        if (!isset($requirements['maxTimeoutSeconds'])) {
+            $requirements['maxTimeoutSeconds'] = 3600;
+        }
+
+        // Build full PaymentRequired object per x402 V2 spec (coinbase/x402)
+        $scheme = $_SERVER['HTTPS'] ?? '' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $resourceUrl = $scheme . '://' . $host . $endpoint;
+
+        $paymentRequired = [
+            'x402Version' => 2,
+            'error' => 'PAYMENT-SIGNATURE header is required',
+            'resource' => [
+                'url' => $resourceUrl,
+                'description' => $requirements['extra']['description'] ?? 'Paid resource',
+                'mimeType' => 'application/json',
+            ],
+            'accepts' => [$requirements],
+        ];
+
         http_response_code(402);
         header('Content-Type: application/json');
 
-        // x402.org V2 payload (primary — used by agent, frontend, facilitator)
-        header(self::HEADER_PAYMENT_REQUIRED . ': ' . base64_encode(json_encode([$requirements])));
+        // x402 V2 spec: full PaymentRequired envelope in header
+        header(self::HEADER_PAYMENT_REQUIRED . ': ' . base64_encode(json_encode($paymentRequired)));
 
         // Bounty #11 spec compatibility headers (interoperability)
         header('X-Payment-Amount: ' . $requirements['amount']);
@@ -155,10 +176,7 @@ class X402Middleware {
         header('X-Payment-Invoice-Id: ' . $invoiceId);
 
         echo json_encode([
-            'success' => false,
-            'message' => 'Payment Required',
-            'error_code' => 'X402_PAYMENT_REQUIRED',
-            'x402Version' => 2,
+            'error' => 'Payment required',
         ]);
         exit;
     }

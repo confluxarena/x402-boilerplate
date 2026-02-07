@@ -140,7 +140,9 @@ async function main() {
         process.exit(1);
     }
 
-    const requirements = JSON.parse(Buffer.from(paymentRequiredHeader, 'base64').toString())[0];
+    const parsed = JSON.parse(Buffer.from(paymentRequiredHeader, 'base64').toString());
+    // V2 envelope: { x402Version, resource, accepts: [...] }, V1 fallback: bare object/array
+    const requirements = parsed.accepts ? parsed.accepts[0] : (Array.isArray(parsed) ? parsed[0] : parsed);
     const amountHuman = parseInt(requirements.amount) / 1e6;
 
     console.log('');

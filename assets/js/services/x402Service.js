@@ -64,12 +64,16 @@ class X402Service {
   }
 
   /**
-   * Parse PAYMENT-REQUIRED header into requirements array
+   * Parse PAYMENT-REQUIRED header (x402 V2 PaymentRequired envelope)
    */
   parsePaymentRequired(response) {
     const header = response.headers.get('PAYMENT-REQUIRED');
     if (!header) throw new Error('Missing PAYMENT-REQUIRED header');
-    return JSON.parse(atob(header));
+    const parsed = JSON.parse(atob(header));
+    // V2 envelope: { x402Version, resource, accepts: [...] }
+    if (parsed.accepts) return parsed.accepts;
+    // V1 fallback: bare array or object
+    return Array.isArray(parsed) ? parsed : [parsed];
   }
 
   /**
