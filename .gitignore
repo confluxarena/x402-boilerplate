@@ -1,4 +1,30 @@
+# Environment
 .env
+.env.*
+!.env.example
+
+# Dependencies
 node_modules/
+vendor/
+
+# Build
+dist/
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage/
+.nyc_output/

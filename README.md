@@ -2,7 +2,9 @@
 
 > Production-ready implementation of the [x402 protocol](https://www.x402.org) for paid AI APIs on **Conflux eSpace**
 
+[![CI](https://github.com/confluxarena/x402-boilerplate/actions/workflows/ci.yml/badge.svg)](https://github.com/confluxarena/x402-boilerplate/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen.svg)](https://confluxarena.org/x402-demo)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933.svg)](https://nodejs.org/)
 [![PHP](https://img.shields.io/badge/PHP-8.4+-777BB4.svg)](https://www.php.net/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
